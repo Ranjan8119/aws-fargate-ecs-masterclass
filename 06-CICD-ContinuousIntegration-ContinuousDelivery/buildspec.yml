@@ -1,27 +1,19 @@
 version: 0.2
-
 phases:
   install:
     runtime-versions:
-      docker: 18       
+      java: corretto11
   pre_build:
     commands:
-      - echo Logging in to Amazon ECR.....
-      - aws --version
-      - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
-      - REPOSITORY_URI=180789647333.dkr.ecr.ap-south-1.amazonaws.com/ecs-cicd-nginx
-      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+    - echo In the pre_build phase...
   build:
     commands:
-      - echo Build started on `date`
-      - echo Building the Docker image...
-      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+    - echo Build started on `date`
+    - mvn install
   post_build:
     commands:
-      - echo Build completed on `date`
-      - echo Pushing the Docker images...
-      - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - echo Writing image definitions file...
-      - printf '[{"name":"ecs-cicd-nginx","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+    - echo Build completed on `date`
 artifacts:
-    files: imagedefinitions.json
+  files:
+  - target/bike-service-0.0.1-SNAPSHOT.war
+  - scripts/*
